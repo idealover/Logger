@@ -4,12 +4,13 @@ import threading
 from datetime import datetime
 
 class ChatLogger:
-    def __init__(self, openai_create_function, file_path = None):
+    def __init__(self, openai_create_function, file_path = None, skip_system = False):
         if file_path is None:
             self.file_path = f"chatlog_{datetime.now().strftime('%Y%m%d')}.jsonl"
         else:
             self.file_path = file_path
         self.openai_create_function = openai_create_function
+        self.skip_system = skip_system
 
         #Create the file if it does not exist
         f = open(self.file_path, "a")
@@ -25,6 +26,11 @@ class ChatLogger:
             "conversations": [], 
             "quality": 0
         }
+        
+        #Skip the system response if needed
+        if self.skip_system:
+            chat_prompt = [message for message in chat_prompt if message["role"] != "system"]
+            
         chat_data["conversations"] += chat_prompt 
         chat_data["conversations"].append(chat_response["choices"][0]["message"])
 
